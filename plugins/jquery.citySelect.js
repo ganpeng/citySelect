@@ -1,5 +1,6 @@
 /**
  * citySelect, a jQuery plugin
+ * https://github.com/tonylevid/citySelect
  * Author TonyLevid
  * Version 0.2
  * 城市选择
@@ -27,6 +28,24 @@
                 });
             }
         }
+
+        /**
+         * $.getScript with cache.
+         * @param string url get script url
+         * @param json options $.ajax options
+         * @return object
+         */
+        function cachedScript(url, options) {
+            // Allow user to set any option except for dataType, cache, and url
+            options = $.extend(options || {}, {
+                dataType : 'script',
+                cache : true,
+                url : url
+            });
+            // Use $.ajax() since it is more flexible than $.getScript
+            // Return the jqXHR object so we can chain callbacks
+            return $.ajax(options);
+        };
 
         function citySelectRun(json) {
             var prov = citySelectOptions.jsonAreasMainKeysMap.prov;
@@ -216,10 +235,12 @@
         var tmpArr = citySelectOptions.jsonAreas.replace(/\/+$/, '').split('/');
         var citySelect_jsonAreas_key = tmpArr[tmpArr.length - 1];
         if ($.isEmptyObject(citySelect_jsonAreas[citySelect_jsonAreas_key])) {
-            $.getScript(citySelectOptions.jsonAreas, function() {
-                var jsonAreas = citySelectMainData;
-                citySelect_jsonAreas[citySelect_jsonAreas_key] = jsonAreas;
-                citySelectRun(jsonAreas);
+            cachedScript(citySelectOptions.jsonAreas, {
+                success: function() {
+                    var jsonAreas = citySelectMainData;
+                    citySelect_jsonAreas[citySelect_jsonAreas_key] = jsonAreas;
+                    citySelectRun(jsonAreas);
+                }
             });
         } else {
             citySelectRun(citySelect_jsonAreas[citySelect_jsonAreas_key]);
